@@ -1,0 +1,86 @@
+.victory-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: fadeIn 600ms ease-out;
+  pointer-events: auto;
+}
+
+.victory-modal {
+  background: #1f2229;
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  animation: bounceIn 600ms cubic-bezier(0.2, 0.9, 0.3, 1.1) 200ms backwards;
+}
+
+.victory-modal h1 {
+  margin-top: 0;
+  font-size: 2rem;
+  background: linear-gradient(45deg, #4caf50, #2196f3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.restart-btn {
+  margin-top: 1.5rem;
+  background: #2196f3;
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 200ms;
+}
+
+.restart-btn:hover {
+  background: #1976d2;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.stat {
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounceIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
