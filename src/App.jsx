@@ -1,43 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
-import { selectNextAgenda, MAX_ROUNDS, loadAgendas } from "./agendas";
+import { selectNextAgenda, MAX_ROUNDS, SIZES, COLORS, EMOJIS, loadAgendas } from "./agendas";
 import { VictoryScreen } from "./VictoryScreen";
 
 // --- domain data ------------------------------------------------------------
 
 const GRID_SIZE = 5;
-
-const EMOJIS = {
-  shape: {
-    square: "⬜️",
-    triangle: "🔺",
-    circle: "⭕️",
-    star: "⭐️",
-  },
-  animal: {
-    snail: "🐌",
-    lion: "🦁",
-    fish: "🐟",
-    monkey: "🐒",
-    dinosaur: "🦕",
-  },
-  food: {
-    drumstick: "🍗",
-    taco: "🌮",
-    icecream: "🍨",
-    salad: "🥗",
-  },
-};
-
-const SIZES = ["S", "M", "L"];
-const COLORS = [
-  { key: "red", label: "Red", value: "#f44336" },
-  { key: "orange", label: "Orange", value: "#ff9800" },
-  { key: "yellow", label: "Yellow", value: "#ffeb3b" },
-  { key: "green", label: "Green", value: "#4caf50" },
-  { key: "blue", label: "Blue", value: "#2196f3" },
-  { key: "purple", label: "Purple", value: "#9c27b0" },
-];
 
 // --- helper to find objects at a position -----------------------------------
 
@@ -219,6 +187,7 @@ function App() {
   const [completedAgendaIds, setCompletedAgendaIds] = useState([]);
   const [agendasList, setAgendasList] = useState([]);
   const [currentAgenda, setCurrentAgenda] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [gameStats, setGameStats] = useState({
     startTime: Date.now(),
     totalMoves: 0,
@@ -227,7 +196,7 @@ function App() {
 
   // handle victory condition (only consider complete when agendas are loaded)
   const actualMaxRounds = Math.min(MAX_ROUNDS, agendasList.length || 0);
-  const isGameComplete = agendasList.length > 0 && (!currentAgenda || completedAgendaIds.length >= actualMaxRounds);
+  const isGameComplete = !isLoading && agendasList.length > 0 && (!currentAgenda || completedAgendaIds.length >= actualMaxRounds);
 
   // Load agendas metadata from public/agendas.json on mount
   useEffect(() => {
@@ -238,6 +207,7 @@ function App() {
       setAgendasList(loaded);
       // initialize the first agenda
       setCurrentAgenda(selectNextAgenda(loaded, []));
+      setIsLoading(false);
     })();
     return () => { mounted = false; };
   }, []);
@@ -273,14 +243,22 @@ function App() {
   function handleCellClick(row, col, e) {
     const x = e?.clientX || null;
     const y = e?.clientY || null;
-    
-    // Clear any existing modals
+
+    const existing = getObjectAt(objects, row, col);
+
+    // If the edit modal is already open for this object's id and the same
+    // cell is clicked again, treat it as a Remove action.
+    if (editingObject && existing && existing.id === editingObject) {
+      handleRemoveObject(existing.id);
+      return;
+    }
+
+    // Otherwise clear any existing modals and open the appropriate one for
+    // the clicked cell (either edit existing object or open place-object).
     setSelectedCell(null);
     setEditingObject(null);
     setModalPos(null);
-    
-    // Set up the new modal
-    const existing = getObjectAt(objects, row, col);
+
     if (existing) {
       setEditingObject(existing.id);
       setModalPos({ x, y });
@@ -370,10 +348,14 @@ function App() {
       </header>
 
       <div className="game-body">
-        <Board objects={objects} onCellClick={handleCellClick} />
+        {isLoading ? (
+          <div className="loading">Loading agendas...</div>
+        ) : (
+          <>
+            <Board objects={objects} onCellClick={handleCellClick} />
 
-        <div className="side-panel">
-          {!isGameComplete && (
+            <div className="side-panel">
+              {!isGameComplete && (
             <>
               <AgendaPanel agenda={currentAgenda} agendaCheck={agendaCheck} />
               {agendaCheck.ok && (
@@ -384,6 +366,8 @@ function App() {
             </>
           )}
         </div>
+        </>
+        )}
       </div>
 
       {isGameComplete && (

@@ -1,11 +1,5 @@
 [
   {
-    "id": "one-small",
-    "title": "Tiny One",
-    "description": "An item on the board must be small.",
-    "difficulty": 2.0
-  },
-  {
     "id": "second-column-orange",
     "title": "Orange Avenue",
     "description": "All items in the second column must be orange.",
@@ -20,7 +14,7 @@
   {
     "id": "all-different",
     "title": "Variety Show",
-    "description": "Have at least 3 items, all with different shapes, sizes, and categories.",
+    "description": "Have at least 3 items, all with different sizes, colors, and categories.  Also, there should be a star on the board.",
     "difficulty": 7.0
   },
   {

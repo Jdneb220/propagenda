@@ -2,6 +2,40 @@
 // - difficulty: 0.0 (easiest) to 10.0 (hardest)
 // - check function returns { ok: boolean, hints?: string[] }
 
+// Game constants for use across codebase
+export const SIZES = ["S", "M", "L"];
+
+export const COLORS = [
+  { key: "red", label: "Red", value: "#f44336" },
+  { key: "orange", label: "Orange", value: "#ff9800" },
+  { key: "yellow", label: "Yellow", value: "#ffeb3b" },
+  { key: "green", label: "Green", value: "#4caf50" },
+  { key: "blue", label: "Blue", value: "#2196f3" },
+  { key: "purple", label: "Purple", value: "#9c27b0" },
+];
+
+export const EMOJIS = {
+  shape: {
+    square: "⬜️",
+    triangle: "🔺",
+    circle: "⭕️",
+    star: "⭐️",
+  },
+  animal: {
+    snail: "🐌",
+    lion: "🦁",
+    fish: "🐟",
+    monkey: "🐒",
+    dinosaur: "🦕",
+  },
+  food: {
+    drumstick: "🍗",
+    taco: "🌮",
+    icecream: "🍨",
+    salad: "🥗",
+  },
+};
+
 // Max rounds in the game (will be reduced if fewer agendas exist)
 export const MAX_ROUNDS = 10;
 
@@ -19,7 +53,10 @@ const CHECKS = {
   },
 
   "second-column-orange": (objects) => {
-    const inSecondCol = objects.filter((o) => o.col === 1);
+    const inSecondCol = objects ? objects.filter((o) => o.col === 1) : [];
+    if (inSecondCol.length === 0) {
+      return { ok: false, hints: ["There are no items in the second column."] };
+    }
     const bad = inSecondCol.filter((o) => o.color !== "orange");
     return {
       ok: bad.length === 0,
@@ -48,31 +85,38 @@ const CHECKS = {
   },
 
   "all-different": (objects) => {
-    if (objects.length < 3) {
-      return {
-        ok: false,
-        hints: ["Need at least 3 items (currently have " + objects.length + ")."],
-      };
+    // Requirement: among placed objects there should be at least three
+    // unique sizes and at least three unique object types (e.g. shape/animal/food).
+    const hints = [];
+    const requiredUnique = 3;
+
+    if (!objects || objects.length < requiredUnique) {
+      return { ok: false, hints: [`Need at least ${requiredUnique} items (currently have ${objects ? objects.length : 0}).`] };
     }
-    for (let i = 0; i < objects.length; i++) {
-      for (let j = i + 1; j < objects.length; j++) {
-        const a = objects[i];
-        const b = objects[j];
-        const hints = [];
-        if (a.type === b.type && a.name === b.name) {
-          hints.push(
-            `Items at (${a.row + 1},${a.col + 1}) and (${b.row + 1},${b.col + 1}) share the same shape/category.`
-          );
-        }
-        if (a.size === b.size) {
-          hints.push(
-            `Items at (${a.row + 1},${a.col + 1}) and (${b.row + 1},${b.col + 1}) are both size ${a.size}.`
-          );
-        }
-        if (hints.length > 0) return { ok: false, hints };
-      }
+
+    const uniqueSizes = new Set(objects.map((o) => o.size).filter(Boolean));
+    const uniqueTypes = new Set(objects.map((o) => o.type).filter(Boolean));
+    const uniqueColors = new Set(objects.map((o) => o.color).filter(Boolean));
+
+    if (uniqueSizes.size < requiredUnique) {
+      hints.push(
+        `Only ${uniqueSizes.size} unique size(s) present; need at least ${requiredUnique}. Found sizes: ${[...uniqueSizes].join(', ') || 'none'}.`
+      );
     }
-    return { ok: true, hints: [] };
+
+    if (uniqueTypes.size < requiredUnique) {
+      hints.push(
+        `Only ${uniqueTypes.size} unique object type(s) present; need at least ${requiredUnique}. Found types: ${[...uniqueTypes].join(', ') || 'none'}.`
+      );
+    }
+
+    if (uniqueColors.size < requiredUnique) {
+      hints.push(
+        `Only ${uniqueColors.size} unique color type(s) present; need at least ${requiredUnique}. Found types: ${[...uniqueColors].join(', ') || 'none'}.`
+      );
+    }
+
+    return { ok: hints.length === 0, hints };
   },
 
   "one-per-row": (objects) => {
@@ -89,7 +133,10 @@ const CHECKS = {
   },
 
   "snails-purple": (objects) => {
-    const snails = objects.filter((o) => o.type === "animal" && o.name === "snail");
+    const snails = objects ? objects.filter((o) => o.type === "animal" && o.name === "snail") : [];
+    if (snails.length === 0) {
+      return { ok: false, hints: ["I don't see any snails..."] };
+    }
     const bad = snails.filter((s) => s.color !== "purple");
     return {
       ok: bad.length === 0,
@@ -98,8 +145,8 @@ const CHECKS = {
   },
 
   "squares-same-column": (objects) => {
-    const squares = objects.filter((o) => o.type === "shape" && o.name === "square");
-    if (squares.length <= 1) return { ok: true, hints: [] };
+    const squares = objects ? objects.filter((o) => o.type === "shape" && o.name === "square") : [];
+    if (squares.length < 2) return { ok: false, hints: ["We need more squares to share a column..."] };
     const col = squares[0].col;
     const bad = squares.filter((s) => s.col !== col);
     return {
