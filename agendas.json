@@ -1,0 +1,44 @@
+[
+  {
+    "id": "second-column-orange",
+    "title": "Orange Avenue",
+    "description": "All items in the second column must be orange.",
+    "difficulty": 4.0
+  },
+  {
+    "id": "two-in-fourth",
+    "title": "Fourth Column Duo",
+    "description": "Have exactly two items on the board, both in the fourth column.",
+    "difficulty": 4.0
+  },
+  {
+    "id": "all-different",
+    "title": "Variety Show",
+    "description": "Have at least 3 items, all with different sizes, colors, and categories.  Also, there should be a star on the board.",
+    "difficulty": 7.0
+  },
+  {
+    "id": "one-per-row",
+    "title": "Every row has something",
+    "description": "Place at least one object on every row.",
+    "difficulty": 2.0
+  },
+  {
+    "id": "snails-purple",
+    "title": "All snails are purple",
+    "description": "Every 🐌 on the board must have color = purple.",
+    "difficulty": 4.0
+  },
+  {
+    "id": "squares-same-column",
+    "title": "All squares are in the same column",
+    "description": "Every ⬜️ must share the same column.",
+    "difficulty": 6.0
+  },
+  {
+    "id": "mysterious",
+    "title": "Unknown agenda (discover by playing)",
+    "description": "Parts of this agenda will reveal when you accidentally satisfy them.",
+    "difficulty": 8.0
+  }
+]
