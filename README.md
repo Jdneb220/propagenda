@@ -3,7 +3,7 @@
 
 React game with emojis in the spirit of Tarski's World
 
-(GitHub Page)[https://jdneb220.github.io/propagenda/]
+[GitHub Page](https://jdneb220.github.io/propagenda/)
 
 Place objects on the grid to satisfy the winning game state (the "agenda").  There are three types of objects:
 
