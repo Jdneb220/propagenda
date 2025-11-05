@@ -1,5 +1,5 @@
 # propagenda
-![tarski's world textbook](https://www.gradegrinder.net/images/static-page-img/tarski_textbook.jpg))
+![tarski's world textbook](https://www.gradegrinder.net/images/static-page-img/tarski_textbook.jpg)
 
 React game with emojis in the spirit of Tarski's World
 
