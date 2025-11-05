@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
-import { selectNextAgenda, MAX_ROUNDS, agendas } from "./agendas";
+import { selectNextAgenda, MAX_ROUNDS, loadAgendas } from "./agendas";
 import { VictoryScreen } from "./VictoryScreen";
 
 // --- domain data ------------------------------------------------------------
@@ -217,21 +217,36 @@ function App() {
   const [editingObject, setEditingObject] = useState(null); // object id
   const [modalPos, setModalPos] = useState(null); // {x,y}
   const [completedAgendaIds, setCompletedAgendaIds] = useState([]);
-  const [currentAgenda, setCurrentAgenda] = useState(() => selectNextAgenda([]));
+  const [agendasList, setAgendasList] = useState([]);
+  const [currentAgenda, setCurrentAgenda] = useState(null);
   const [gameStats, setGameStats] = useState({
     startTime: Date.now(),
     totalMoves: 0,
     objectsPlaced: 0,
   });
 
-  // handle victory condition
-  const isGameComplete = !currentAgenda || completedAgendaIds.length >= Math.min(MAX_ROUNDS, agendas.length);
+  // handle victory condition (only consider complete when agendas are loaded)
+  const actualMaxRounds = Math.min(MAX_ROUNDS, agendasList.length || 0);
+  const isGameComplete = agendasList.length > 0 && (!currentAgenda || completedAgendaIds.length >= actualMaxRounds);
+
+  // Load agendas metadata from public/agendas.json on mount
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const loaded = await loadAgendas();
+      if (!mounted) return;
+      setAgendasList(loaded);
+      // initialize the first agenda
+      setCurrentAgenda(selectNextAgenda(loaded, []));
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   // Update timer for stats
   const [timeTaken, setTimeTaken] = useState("0:00");
   useEffect(() => {
     if (isGameComplete) return;
-    
+
     const interval = setInterval(() => {
       const seconds = Math.floor((Date.now() - gameStats.startTime) / 1000);
       const minutes = Math.floor(seconds / 60);
@@ -244,7 +259,7 @@ function App() {
 
   function handleRestart() {
     setCompletedAgendaIds([]);
-    setCurrentAgenda(selectNextAgenda([]));
+    setCurrentAgenda(selectNextAgenda(agendasList, []));
     setObjects(generateRandomObjects(0));
     setGameStats({
       startTime: Date.now(),
@@ -318,13 +333,13 @@ function App() {
     // mark current agenda as completed
     setCompletedAgendaIds(prev => [...prev, currentAgenda.id]);
     // select next agenda based on completion history
-    const nextAgenda = selectNextAgenda([...completedAgendaIds, currentAgenda.id]);
+    const nextAgenda = selectNextAgenda(agendasList, [...completedAgendaIds, currentAgenda.id]);
     setCurrentAgenda(nextAgenda);
     setSelectedCell(null);
     setEditingObject(null);
 
     // If this was the last agenda, ensure we show the victory screen
-    if (!nextAgenda || completedAgendaIds.length + 1 >= Math.min(MAX_ROUNDS, agendas.length)) {
+    if (!nextAgenda || completedAgendaIds.length + 1 >= Math.min(MAX_ROUNDS, agendasList.length || 0)) {
       setCurrentAgenda(null);
     }
   }
@@ -343,8 +358,8 @@ function App() {
       <header className="game-header">
         <h1>prop.agenda</h1>
         <div className="game-progress">
-          <p>
-            Agenda {completedAgendaIds.length + 1} of {Math.min(MAX_ROUNDS, agendas.length)}: {currentAgenda?.title}
+            <p>
+            Agenda {completedAgendaIds.length + 1} of {Math.min(MAX_ROUNDS, agendasList.length || 0)}: {currentAgenda?.title}
             {currentAgenda && (
               <span className="difficulty" title="Agenda difficulty">
                 (Difficulty: {currentAgenda.difficulty.toFixed(1)})
@@ -363,7 +378,7 @@ function App() {
               <AgendaPanel agenda={currentAgenda} agendaCheck={agendaCheck} />
               {agendaCheck.ok && (
                 <button className="next-btn" onClick={handleNextRound}>
-                  ✅ Agenda satisfied {completedAgendaIds.length + 1 < Math.min(MAX_ROUNDS, agendas.length) ? '– Next agenda' : '– Complete Game'}
+                  ✅ Agenda satisfied {completedAgendaIds.length + 1 < Math.min(MAX_ROUNDS, agendasList.length || 0) ? '– Next agenda' : '– Complete Game'}
                 </button>
               )}
             </>
@@ -379,6 +394,7 @@ function App() {
             objectsPlaced: gameStats.objectsPlaced,
             timeTaken: timeTaken
           }}
+          totalAgendas={Math.min(MAX_ROUNDS, agendasList.length || 0)}
         />
       )}
 

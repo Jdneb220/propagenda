@@ -1,8 +1,8 @@
 import "./VictoryScreen.css";
-import { MAX_ROUNDS, agendas } from "./agendas";
+import { MAX_ROUNDS } from "./agendas";
 
-export const VictoryScreen = ({ onRestart, stats = {} }) => {
-  const actualMaxRounds = Math.min(MAX_ROUNDS, agendas.length);
+export const VictoryScreen = ({ onRestart, stats = {}, totalAgendas = 0 }) => {
+  const actualMaxRounds = Math.min(MAX_ROUNDS, totalAgendas || 0);
   
   return (
     <div className="victory-backdrop" onClick={(e) => e.stopPropagation()}>
